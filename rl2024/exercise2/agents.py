@@ -4,6 +4,7 @@ import random
 from typing import List, Dict, DefaultDict
 from gymnasium.spaces import Space
 from gymnasium.spaces.utils import flatdim
+import numpy as np
 
 
 class Agent(ABC):
@@ -53,10 +54,10 @@ class Agent(ABC):
         :param obs (int): received observation representing the current environmental state
         :return (int): index of selected action
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q2")
-        ### RETURN AN ACTION HERE ###
-        return -1
+        if random.uniform(0, 1) > self.epsilon:
+            return max(list(range(self.action_space.n)), key = lambda x: self.q_table[(obs, x)])
+        else:
+            return self.action_space.sample()
 
     @abstractmethod
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -104,8 +105,15 @@ class QLearningAgent(Agent):
         :param done (bool): flag indicating whether a terminal state has been reached
         :return (float): updated Q-value for current observation-action pair
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q2")
+        if not done:
+            a_ = np.argmax([self.q_table[(n_obs, a)] for a in range(self.n_acts)])
+            self.q_table[(obs, action)] += self.alpha*(reward + self.gamma*self.q_table[(n_obs, a_)] - self.q_table[(obs, action)])
+        
+        else:
+            self.q_table[(obs, action)] += self.alpha*(reward - self.q_table[(obs, action)])
+
+        obs = n_obs
+
         return self.q_table[(obs, action)]
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -152,10 +160,40 @@ class MonteCarloAgent(Agent):
         :return (Dict): A dictionary containing the updated Q-value of all the updated state-action pairs
             indexed by the state action pair.
         """
-        updated_values = {}
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q2")
-        return updated_values
+        traj_length = len(obses)
+        self.sa_counts = defaultdict(int)
+        returns = defaultdict(list)
+        G = 0
+        state_action_pairs = list(zip(obses, actions))
+        # updated_values = {}
+
+        # for t in range(traj_length - 2, -1, -1):
+            
+        #     # if not (obses[t], actions[t]) in state_action_pairs[:t]:
+        #     if state_action_pairs.index((obses[t], actions[t])) == t:
+        #         G = self.gamma*G + rewards[t+1]
+        #         # returns[(obses[t], actions[t])].append(G)
+        #         self.sa_counts[(obses[t], actions[t])] += 1
+        #         # self.q_table[(obses[t], actions[t])] = sum(returns[(obses[t], actions[t])]) * (self.sa_counts[(obses[t], actions[t])])
+        #         self.q_table[(obses[t], actions[t])] = (self.q_table[(obses[t], actions[t])] * self.sa_counts[(obses[t], actions[t])] + G)/(self.sa_counts[(obses[t], actions[t])] + 1)
+
+        visited_state_actions = set()
+
+        # for t in range(traj_length - 2, -1, -1):
+        for t in range(traj_length-1):
+            G = self.gamma * G + rewards[t + 1]
+            state_action_pair = (obses[t], actions[t])
+
+            if state_action_pair not in visited_state_actions:
+                G = self.gamma*G + rewards[t+1]
+                # returns[(obses[t], actions[t])].append(G)
+                self.sa_counts[(obses[t], actions[t])] += 1
+                # self.q_table[(obses[t], actions[t])] = sum(returns[(obses[t], actions[t])]) * (self.sa_counts[(obses[t], actions[t])])
+                self.q_table[(obses[t], actions[t])] = (self.q_table[(obses[t], actions[t])] * self.sa_counts[(obses[t], actions[t])] + G)/(self.sa_counts[(obses[t], actions[t])] + 1)
+
+            visited_state_actions.add(state_action_pair)
+    
+        return self.q_table
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
         """Updates the hyperparameters
