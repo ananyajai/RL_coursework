@@ -369,19 +369,21 @@ class Reinforce(Agent):
         """
         L = 0
         G = 0
+        
         traj_length = len(observations)
-        print(self.policy)
+        action_probabilities = self.policy(torch.tensor(observations, dtype=torch.float32))
+
         for t in range(traj_length - 2, -1, -1):
-            G = self.gamma*G + rewards[t+1]
-            L = L - G*np.log(self.policy(actions[t]))
+            G = self.gamma * G + rewards[t+1]
+            action_prob = action_probabilities[t, actions[t]]
+            L = L - G * torch.log(action_prob)
 
         L = L/traj_length
+        
         self.policy_optim.zero_grad()
         loss_tensor = torch.tensor(L, requires_grad=True)
         loss_tensor.backward()
         self.policy_optim.step()
 
         return {"p_loss": float(L)}
-    
-        # p_loss = 0.0
-        # return {"p_loss": p_loss}
+
