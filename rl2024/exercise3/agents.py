@@ -340,8 +340,19 @@ class Reinforce(Agent):
         :param explore (bool): flag indicating whether we should explore
         :return (sample from self.action_space): action the agent should perform
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
+        state = torch.tensor(obs, dtype=torch.float32)
+        action_prob = self.policy(state)
+        # action_distribution = torch.distributions.Categorical(action_prob)
+
+        if explore:
+            # Explore - sample a random action
+            sampled_action = np.random.choice(self.action_space.n)
+        else:
+            # Exploit - choose the action with the highest probability
+            sampled_action = torch.argmax(action_prob).item()
+
+        return sampled_action
+    
 
     def update(
         self, rewards: List[float], observations: List[np.ndarray], actions: List[int],
@@ -356,7 +367,21 @@ class Reinforce(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
             losses
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
-        p_loss = 0.0
-        return {"p_loss": p_loss}
+        L = 0
+        G = 0
+        traj_length = len(observations)
+        print(self.policy)
+        for t in range(traj_length - 2, -1, -1):
+            G = self.gamma*G + rewards[t+1]
+            L = L - G*np.log(self.policy(actions[t]))
+
+        L = L/traj_length
+        self.policy_optim.zero_grad()
+        loss_tensor = torch.tensor(L, requires_grad=True)
+        loss_tensor.backward()
+        self.policy_optim.step()
+
+        return {"p_loss": float(L)}
+    
+        # p_loss = 0.0
+        # return {"p_loss": p_loss}
