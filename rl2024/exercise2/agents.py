@@ -192,7 +192,7 @@ class MonteCarloAgent(Agent):
                 self.q_table[(obses[t], actions[t])] = (self.q_table[(obses[t], actions[t])] * self.sa_counts[(obses[t], actions[t])] + G)/(self.sa_counts[(obses[t], actions[t])] + 1)
 
             visited_state_actions.add(state_action_pair)
-    
+
         return self.q_table
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):

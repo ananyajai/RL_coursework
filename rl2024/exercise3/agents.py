@@ -237,8 +237,20 @@ class DQN(Agent):
         :param explore (bool): flag indicating whether we should explore
         :return (sample from self.action_space): action the agent should perform
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
+        state = torch.tensor(obs, dtype=torch.float32)
+        action_values = self.critics_net(state)
+
+        if explore:
+            if np.random.uniform(0, 1) < self.epsilon:
+                # Explore - sample a random action
+                sampled_action = np.random.choice(self.action_space.n)
+            else:
+                sampled_action = torch.argmax(action_values).item()
+        else:
+            # Exploit - choose the action with the highest probability
+            sampled_action = torch.argmax(action_values).item()
+
+        return sampled_action
 
     def update(self, batch: Transition) -> Dict[str, float]:
         """Update function for DQN
@@ -252,9 +264,27 @@ class DQN(Agent):
         :param batch (Transition): batch vector from replay buffer
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
-        q_loss = 0.0
+        j = np.random.randint(self.batch_size)
+        state_j = batch[0][j]
+        action_j = batch[1][j]
+        next_state = batch[2][j]
+        reward_j = batch[3][j]
+        done = batch[4][j]
+
+        best_action = self.act(next_state, explore=False)
+    
+        if done:
+            y = reward_j
+        else:
+            y = reward_j + self.gamma*best_action
+
+        self.critics_optim.zero_grad()
+        q_loss = torch.tensor(y, requires_grad=True)
+        q_loss.backward()
+        self.critics_optim.step()
+
+        # raise NotImplementedError("Needed for Q3")
+    
         return {"q_loss": q_loss}
 
 
@@ -379,7 +409,7 @@ class Reinforce(Agent):
             L = L - G * torch.log(action_prob)
 
         L = L/traj_length
-        
+
         self.policy_optim.zero_grad()
         loss_tensor = torch.tensor(L, requires_grad=True)
         loss_tensor.backward()
