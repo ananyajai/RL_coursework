@@ -277,6 +277,8 @@ class DQN(Agent):
             y = reward_j
         else:
             y = reward_j + self.gamma*best_action
+        
+        y = (y - (self.critics_net(state_j)[int(action_j.item())].item()))**2
 
         self.critics_optim.zero_grad()
         q_loss = torch.tensor(y, requires_grad=True)

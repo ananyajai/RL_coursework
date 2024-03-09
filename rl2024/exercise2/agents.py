@@ -165,7 +165,32 @@ class MonteCarloAgent(Agent):
         returns = defaultdict(list)
         G = 0
         state_action_pairs = list(zip(obses, actions))
-        # updated_values = {}
+        updated_values = {}
+        # visited_state_actions = set()
+
+        for t in range(traj_length - 2, -1, -1):
+            G = self.gamma * G + rewards[t+1]
+            state_action_pair = (obses[t], actions[t])
+
+            # if state_action_pair not in visited_state_actions:
+            if not state_action_pair in state_action_pairs[:t]:
+                returns[state_action_pair].append(G)
+                self.sa_counts[state_action_pair] += 1
+                self.q_table[state_action_pair] += (G - self.q_table[state_action_pair]) / self.sa_counts[state_action_pair]
+                self.q_table[state_action_pair] = np.sum(returns[state_action_pair])/self.sa_counts[state_action_pair]
+                
+                # R = sum(rewards[t:])
+            
+                # #update total return of the state-action pair
+                # returns[state_action_pair] = returns[state_action_pair] + R
+                
+                # #update the number of times the state-action pair is visited
+                # self.sa_counts[state_action_pair] += 1
+
+                # #compute the Q value by just taking the average
+                # self.q_table[state_action_pair] = returns[state_action_pair] / self.sa_counts[state_action_pair]
+
+            # visited_state_actions.add(state_action_pair)
 
         # for t in range(traj_length - 2, -1, -1):
             
@@ -177,21 +202,6 @@ class MonteCarloAgent(Agent):
         #         # self.q_table[(obses[t], actions[t])] = sum(returns[(obses[t], actions[t])]) * (self.sa_counts[(obses[t], actions[t])])
         #         self.q_table[(obses[t], actions[t])] = (self.q_table[(obses[t], actions[t])] * self.sa_counts[(obses[t], actions[t])] + G)/(self.sa_counts[(obses[t], actions[t])] + 1)
 
-        visited_state_actions = set()
-
-        # for t in range(traj_length - 2, -1, -1):
-        for t in range(traj_length-1):
-            G = self.gamma * G + rewards[t + 1]
-            state_action_pair = (obses[t], actions[t])
-
-            if state_action_pair not in visited_state_actions:
-                G = self.gamma*G + rewards[t+1]
-                # returns[(obses[t], actions[t])].append(G)
-                self.sa_counts[(obses[t], actions[t])] += 1
-                # self.q_table[(obses[t], actions[t])] = sum(returns[(obses[t], actions[t])]) * (self.sa_counts[(obses[t], actions[t])])
-                self.q_table[(obses[t], actions[t])] = (self.q_table[(obses[t], actions[t])] * self.sa_counts[(obses[t], actions[t])] + G)/(self.sa_counts[(obses[t], actions[t])] + 1)
-
-            visited_state_actions.add(state_action_pair)
 
         return self.q_table
 
