@@ -278,15 +278,18 @@ class DQN(Agent):
         else:
             y = reward_j + self.gamma*best_action
         
-        y = (y - (self.critics_net(state_j)[int(action_j.item())].item()))**2
+        y = (y - (self.critics_target(state_j)[int(action_j.item())].item()))**2
 
         self.critics_optim.zero_grad()
         q_loss = torch.tensor(y, requires_grad=True)
         q_loss.backward()
         self.critics_optim.step()
 
-        # raise NotImplementedError("Needed for Q3")
-    
+        self.target_update_freq -= 1
+
+        if self.target_update_freq == 0:
+            self.critics_target = self.critics_net
+
         return {"q_loss": q_loss}
 
 
