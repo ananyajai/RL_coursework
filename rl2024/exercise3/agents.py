@@ -377,7 +377,6 @@ class Reinforce(Agent):
         """
         state = torch.tensor(obs, dtype=torch.float32)
         action_prob = self.policy(state)
-        # action_distribution = torch.distributions.Categorical(action_prob)
 
         if explore:
             # Explore - sample a random action
@@ -416,8 +415,8 @@ class Reinforce(Agent):
         L = L/traj_length
 
         self.policy_optim.zero_grad()
-        loss_tensor = torch.tensor(L, requires_grad=True)
-        loss_tensor.backward()
+        # loss_tensor = torch.tensor(L, requires_grad=True)
+        L.backward()
         self.policy_optim.step()
 
         return {"p_loss": float(L)}
