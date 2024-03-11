@@ -271,14 +271,13 @@ class DQN(Agent):
         reward_j = batch[3][j]
         done = batch[4][j]
 
-        best_action = self.act(next_state, explore=False)
+        best_action = torch.argmax(self.critics_target(next_state)).item()
     
-        if done:
-            y = reward_j
-        else:
-            y = reward_j + self.gamma*best_action
+        y = reward_j + self.gamma * (1 - done) * best_action
         
-        y = (y - (self.critics_target(state_j)[int(action_j.item())].item()))**2
+        y = (y - (self.critics_net(state_j)[int(action_j.item())].item()))**2
+        # current_value = self.critics_net(state_j).unsqueeze(0).gather(1, action_j.long())
+        # y = (y - current_value)**2
 
         self.critics_optim.zero_grad()
         q_loss = torch.tensor(y, requires_grad=True)
@@ -290,7 +289,7 @@ class DQN(Agent):
         if self.target_update_freq == 0:
             self.critics_target = self.critics_net
 
-        return {"q_loss": q_loss}
+        return {"q_loss": float(q_loss)}
 
 
 class Reinforce(Agent):
