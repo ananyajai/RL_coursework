@@ -204,8 +204,15 @@ class DQN(Agent):
         """
 
         def epsilon_linear_decay(*args, **kwargs):
-            ### PUT YOUR CODE HERE ###
-            raise(NotImplementedError)
+            explore_timestep = self.exploration_fraction * max_timestep
+
+            if timestep < explore_timestep:
+                self.epsilon = self.epsilon_start - (timestep/explore_timestep) * (self.epsilon_start - self.epsilon_min)
+            
+            else:
+                self.epsilon = self.epsilon_min
+
+            return self.epsilon
 
         def epsilon_exponential_decay(*args, **kwargs):
             ### PUT YOUR CODE HERE ###
@@ -265,29 +272,33 @@ class DQN(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
         j = np.random.randint(self.batch_size)
-        state_j = batch[0][j]
-        action_j = batch[1][j]
-        next_state = batch[2][j]
-        reward_j = batch[3][j]
-        done = batch[4][j]
+        # state_j = batch[0][j]
+        # action_j = batch[1][j]
+        # next_state = batch[2][j]
+        # reward_j = batch[3][j]
+        # done = batch[4][j]
 
-        best_action = torch.argmax(self.critics_target(next_state)).item()
-    
+        state_j, action_j, next_state, reward_j, done = batch
+
+        action_j = action_j.to(torch.long)
+
+        # best_action = torch.argmax(self.critics_target(next_state)).item()
+        best_action = self.critics_target(next_state).detach().max(1)[0].unsqueeze(-1)
+
         y = reward_j + self.gamma * (1 - done) * best_action
-        
-        y = (y - (self.critics_net(state_j)[int(action_j.item())].item()))**2
-        # current_value = self.critics_net(state_j).unsqueeze(0).gather(1, action_j.long())
-        # y = (y - current_value)**2
+        # q = self.critics_net(state_j)[int(action_j.item())]
+        q = self.critics_net(state_j).gather(1, action_j)
+        q_loss = torch.nn.functional.mse_loss(q, y)
 
         self.critics_optim.zero_grad()
-        q_loss = torch.tensor(y, requires_grad=True)
+        # q_loss = torch.tensor(loss, requires_grad=True)
         q_loss.backward()
         self.critics_optim.step()
 
-        self.target_update_freq -= 1
+        self.update_counter += 1
 
-        if self.target_update_freq == 0:
-            self.critics_target = self.critics_net
+        if self.update_counter % self.target_update_freq == 0:
+            self.critics_target.load_state_dict(self.critics_net.state_dict())
 
         return {"q_loss": float(q_loss)}
 
