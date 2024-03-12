@@ -204,10 +204,11 @@ class DQN(Agent):
         """
 
         def epsilon_linear_decay(*args, **kwargs):
-            explore_timestep = self.exploration_fraction * max_timestep
+            timestep_ratio = timestep/max_timestep
+            # explore_timestep = self.exploration_fraction * max_timestep
 
-            if timestep < explore_timestep:
-                self.epsilon = self.epsilon_start - (timestep/explore_timestep) * (self.epsilon_start - self.epsilon_min)
+            if timestep/max_timestep < self.exploration_fraction:
+                self.epsilon = self.epsilon_start - (timestep_ratio/self.exploration_fraction) * (self.epsilon_start - self.epsilon_min)
             
             else:
                 self.epsilon = self.epsilon_min
@@ -215,8 +216,15 @@ class DQN(Agent):
             return self.epsilon
 
         def epsilon_exponential_decay(*args, **kwargs):
-            ### PUT YOUR CODE HERE ###
-            raise(NotImplementedError)
+            decay_rate = self.epsilon_exponential_decay_factor**(timestep/max_timestep)
+
+            if self.epsilon > self.epsilon_min:
+                self.epsilon *= decay_rate
+
+            else:
+                self.epsilon = self.epsilon_min
+
+            return self.epsilon
 
         if self.epsilon_decay_strategy == "constant":
             pass
