@@ -105,7 +105,9 @@ class DDPG(Agent):
         mean = torch.zeros(ACTION_SIZE)
         std = 0.1 * torch.ones(ACTION_SIZE)
         self.noise = DiagGaussian(mean, std)
-
+        
+        self.noise_variable = Normal(mean, std)
+    
         # ############################### #
         # WRITE ANY AGENT PARAMETERS HERE #
         # ############################### #
@@ -178,8 +180,24 @@ class DDPG(Agent):
         :param explore (bool): flag indicating whether we should explore
         :return (sample from self.action_space): action the agent should perform
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q4")
+        state = torch.tensor(obs, dtype=torch.float32)
+        action_values = self.actor(state)
+
+        with torch.no_grad():
+            if explore:
+                if np.random.uniform(0, 1) < self.epsilon:
+                    # Explore - sample a random action
+                    sampled_action = np.random.choice(self.action_space.n) + self.noise_variable.sample()
+                else:
+                    sampled_action = torch.argmax(action_values).item()
+            else:
+                # Exploit - choose the action with the highest probability
+                sampled_action = torch.argmax(action_values).item()
+
+        sampled_action = torch.clamp(sampled_action, self.lower_action_bound_action_bound, self.upper_action_bound)
+
+        return sampled_action
+
 
     def update(self, batch: Transition) -> Dict[str, float]:
         """Update function for DQN
@@ -193,11 +211,37 @@ class DDPG(Agent):
         :param batch (Transition): batch vector from replay buffer
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
-        ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q4")
-
         q_loss = 0.0
         p_loss = 0.0
+
+        state, action, next_state, reward, done = batch
+
+        action = action.to(torch.long)
+
+        # best_action = torch.argmax(self.critics_target(next_state)).item()
+        best_action = self.critics_target(next_state).detach().max(1)[0].unsqueeze(-1)
+
+        y = reward + self.gamma * (1 - done) * best_action
+
+        q = self.critic(state).gather(1, action)
+        q_loss = torch.nn.functional.mse_loss(q, y)
+
+        p_loss = -torch.mean(self.actor(state, self.actor(state)))
+
+        total_loss = q_loss + p_loss
+
+        # Perform optimization step for both critic and actor networks
+        self.critic_optim.zero_grad()
+        self.policy_optim.zero_grad()
+        total_loss.backward()
+        self.critic_optim.step()
+        self.policy_optim.step()
+
+        self.critic_target = self.tau*self.critic + (1 - self.tau)*self.critic_target
+        self.actor_target = self.tau*self.actor + (1 - self.tau)*self.actor_target
+
+        # raise NotImplementedError("Needed for Q4")
+
         return {
             "q_loss": q_loss,
             "p_loss": p_loss,
