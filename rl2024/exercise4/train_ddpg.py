@@ -8,6 +8,7 @@ import time
 from tqdm import tqdm
 from typing import List, Tuple, Dict
 import matplotlib.pyplot as plt
+import highway_env
 
 from rl2024.constants import EX4_RACETRACK_CONSTANTS as RACETRACK_CONSTANTS
 from rl2024.exercise4.agents import DDPG
@@ -21,6 +22,7 @@ NUM_SEEDS_SWEEP = 10 # NUMBER OF SEEDS TO USE FOR EACH HYPERPARAMETER CONFIGURAT
 SWEEP_SAVE_RESULTS = True # TRUE TO SAVE SWEEP RESULTS TO A FILE
 SWEEP_SAVE_ALL_WEIGTHS = False # TRUE TO SAVE ALL WEIGHTS FROM EACH SEED
 ENV = "RACETRACK"
+
 
 RACETRACK_CONFIG = {
     "critic_hidden_size": [32, 32, 32],
@@ -185,11 +187,12 @@ if __name__ == "__main__":
     else:
         raise(ValueError(f"Unknown environment {ENV}"))
 
-    env = gym.make(CONFIG["env"])
+    # env = gym.make(CONFIG["env"])
+    env = gym.make("racetrack-v0")
     env_eval = gym.make(CONFIG["env"])
 
     if SWEEP and HPARAMS_SWEEP is not None:
-        qqq
+        # qqq
         config_list, swept_params = generate_hparam_configs(CONFIG, HPARAMS_SWEEP)
         results = []
         for config in config_list:
