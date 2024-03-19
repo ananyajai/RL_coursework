@@ -187,8 +187,8 @@ if __name__ == "__main__":
     else:
         raise(ValueError(f"Unknown environment {ENV}"))
 
-    # env = gym.make(CONFIG["env"])
-    env = gym.make("highway-v0")
+    env = gym.make(CONFIG["env"])
+    # env = gym.make("highway-v0")
     env_eval = gym.make(CONFIG["env"])
 
     if SWEEP and HPARAMS_SWEEP is not None:

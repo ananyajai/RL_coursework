@@ -204,10 +204,10 @@ class DQN(Agent):
         """
 
         def epsilon_linear_decay(*args, **kwargs):
-            timestep_ratio = timestep/max_timestep
+            timestep_ratio = 1/max_timestep
             # explore_timestep = self.exploration_fraction * max_timestep
 
-            if timestep/max_timestep < self.exploration_fraction:
+            if 1/max_timestep < self.exploration_fraction:
                 self.epsilon = self.epsilon_start - (timestep_ratio/self.exploration_fraction) * (self.epsilon_start - self.epsilon_min)
             
             else:
