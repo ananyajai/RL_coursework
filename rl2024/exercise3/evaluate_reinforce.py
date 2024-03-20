@@ -8,7 +8,8 @@ from rl2024.util.result_processing import Run, get_best_saved_run
 
 ENV = "CARTPOLE"
 RENDER = True
-SWEEP_DIR = "/home/..." #Path to sweep results directory
+# SWEEP_DIR = "/home/..." #Path to sweep results directory
+SWEEP_DIR = "RL_COURSEWORK/"
 SWEEP_RESULTS_FILE = SWEEP_DIR + SWEEP_RESULTS_FILE_CARTPOLE
 
 

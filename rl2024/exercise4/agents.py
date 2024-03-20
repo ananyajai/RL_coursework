@@ -58,7 +58,9 @@ class DDPG(Agent):
         :param tau (float): step for the update of the target networks
         """
         super().__init__(action_space, observation_space)
+        # STATE_SIZE = 288
         STATE_SIZE = observation_space.shape[0]
+        # ACTION_SIZE = 1
         ACTION_SIZE = action_space.shape[0]
 
         self.upper_action_bound = action_space.high[0]
@@ -181,7 +183,7 @@ class DDPG(Agent):
         :return (sample from self.action_space): action the agent should perform
         """
         state = torch.tensor(obs, dtype=torch.float32)
-        
+
         with torch.no_grad():
             if explore:
                 sampled_action = self.actor(state) + self.noise_variable.sample()

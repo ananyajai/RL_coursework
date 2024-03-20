@@ -24,9 +24,13 @@ SWEEP_SAVE_ALL_WEIGTHS = False # TRUE TO SAVE ALL WEIGHTS FROM EACH SEED
 ENV = "RACETRACK"
 
 
+# RACETRACK_CONFIG = {
+#     "critic_hidden_size": [32, 32, 32],
+#     "policy_hidden_size": [32, 32, 32],
+# }
 RACETRACK_CONFIG = {
-    "critic_hidden_size": [32, 32, 32],
-    "policy_hidden_size": [32, 32, 32],
+    "critic_hidden_size": [64, 64],
+    "policy_hidden_size": [64, 64],
 }
 RACETRACK_CONFIG.update(RACETRACK_CONSTANTS)
 
