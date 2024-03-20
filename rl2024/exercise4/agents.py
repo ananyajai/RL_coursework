@@ -212,32 +212,36 @@ class DDPG(Agent):
         p_loss = 0.0
 
         state, action, next_state, reward, done = batch
-
         action = action.to(torch.long)
 
-        # best_action = torch.argmax(self.critics_target(next_state)).item()
-        best_action = self.critic_target(next_state).detach().max(1)[0].unsqueeze(-1)
+        # Compute target Q-value
+        with torch.no_grad():
+            next_action = self.actor_target.forward(next_state)
+            next_Q = self.critic_target.forward(torch.cat([next_state, next_action], dim=1))
+            y = reward + self.gamma * (1 - done) * next_Q
 
-        y = reward + self.gamma * (1 - done) * best_action
-
-        q = self.critic(state).gather(1, action)
+        # Compute loss for critic network
+        q = self.critic.forward(torch.cat([state, action], dim=1))
         q_loss = F.mse_loss(q, y)
 
-        p_loss = -torch.mean(self.actor(state, self.actor(state)))
+        # Compute loss for actor network
+        p_loss = -self.critic.forward(torch.cat([state, self.actor(state)], dim=1)).mean()
 
-        # Perform optimization step for both critic and actor networks
         self.critic_optim.zero_grad()
         self.policy_optim.zero_grad()
+
+        # Backpropogate and optimise for both critic and actor networks
         p_loss.backward()
+        q_loss.backward()
         self.critic_optim.step()
         self.policy_optim.step()
 
-        total_loss = q_loss + p_loss
-
-        self.critic_target = self.tau*self.critic + (1 - self.tau)*self.critic_target
-        self.actor_target = self.tau*self.actor + (1 - self.tau)*self.actor_target
-
-        # raise NotImplementedError("Needed for Q4")
+        # Soft update for actor and critic using step size tau
+        for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
+            target_param.data.copy_(self.tau * param.data + (1.0 - self.tau) * target_param.data)
+            
+        for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
+            target_param.data.copy_(self.tau * param.data + (1.0 - self.tau) * target_param.data)
 
         return {
             "q_loss": q_loss,
