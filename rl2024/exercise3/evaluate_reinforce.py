@@ -7,9 +7,9 @@ from rl2024.exercise3.train_reinforce import play_episode, CARTPOLE_CONFIG, SWEE
 from rl2024.util.result_processing import Run, get_best_saved_run
 
 ENV = "CARTPOLE"
-RENDER = True
+RENDER = False
 # SWEEP_DIR = "/home/..." #Path to sweep results directory
-SWEEP_DIR = "RL_COURSEWORK/"
+SWEEP_DIR = "/workspaces/RL_coursework/reinforce_results/Reinforce-CartPole-sweep-results.pkl"
 SWEEP_RESULTS_FILE = SWEEP_DIR + SWEEP_RESULTS_FILE_CARTPOLE
 
 

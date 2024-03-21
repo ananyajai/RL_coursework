@@ -70,7 +70,7 @@ def question3_1() -> str:
     c) 2e-4
     return: (str): your answer as a string. accepted strings: "a", "b" or "c"
     """
-    answer = ""  # TYPE YOUR ANSWER HERE "a", "b" or "c"
+    answer = "b"  # TYPE YOUR ANSWER HERE "a", "b" or "c"
     return answer
 
 
