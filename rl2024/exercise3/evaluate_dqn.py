@@ -3,7 +3,9 @@ import pickle
 from typing import List, Tuple
 
 from rl2024.exercise3.agents import DQN
-from rl2024.exercise3.train_dqn import play_episode, CARTPOLE_CONFIG, SWEEP_RESULTS_FILE_CARTPOLE, MOUNTAINCAR_CONFIG, SWEEP_RESULTS_FILE_MOUNTAINCAR
+# from rl2024.exercise3.train_dqn import play_episode, CARTPOLE_CONFIG, SWEEP_RESULTS_FILE_CARTPOLE, MOUNTAINCAR_CONFIG, SWEEP_RESULTS_FILE_MOUNTAINCAR
+from rl2024.exercise3.train_dqn import play_episode, CARTPOLE_CONFIG, MOUNTAINCAR_CONFIG, SWEEP_RESULTS_FILE_MOUNTAINCAR
+
 from rl2024.util.result_processing import Run, get_best_saved_run
 
 ENV = "MOUNTAINCAR" # "CARTPOLE" OR "MOUNTAINCAR"

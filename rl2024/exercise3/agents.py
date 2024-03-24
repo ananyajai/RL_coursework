@@ -282,7 +282,10 @@ class DQN(Agent):
 
         action_j = action_j.to(torch.long)
 
-        best_action = self.critics_target(next_state).detach().max(1)[0].unsqueeze(-1)
+        next_q = self.critics_target(next_state)
+        best_action = next_q.gather(1, next_q.max(1)[1].unsqueeze(-1))
+
+        # best_action = self.critics_target(next_state).detach().max(1)[0].unsqueeze(-1)
 
         y = reward_j + self.gamma * (1 - done) * best_action
         q = self.critics_net(state_j).gather(1, action_j)
@@ -292,8 +295,8 @@ class DQN(Agent):
         q_loss.backward()
         self.critics_optim.step()
 
+        # Hard update
         self.update_counter += 1
-
         if self.update_counter % self.target_update_freq == 0:
             self.critics_target.load_state_dict(self.critics_net.state_dict())
 
