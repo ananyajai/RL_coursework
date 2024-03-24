@@ -204,10 +204,9 @@ class DQN(Agent):
         """
 
         def epsilon_linear_decay(*args, **kwargs):
-            timestep_ratio = 1/max_timestep
-            # explore_timestep = self.exploration_fraction * max_timestep
+            timestep_ratio = timestep/max_timestep
 
-            if 1/max_timestep < self.exploration_fraction:
+            if timestep_ratio < self.exploration_fraction:
                 self.epsilon = self.epsilon_start - (timestep_ratio/self.exploration_fraction) * (self.epsilon_start - self.epsilon_min)
             
             else:
@@ -231,11 +230,11 @@ class DQN(Agent):
         elif self.epsilon_decay_strategy == "linear":
             # linear decay
             ### PUT YOUR CODE HERE ###
-            self.epsilon = epsilon_linear_decay(...)
+            self.epsilon = epsilon_linear_decay(self.epsilon_start, self.epsilon_min, self.exploration_fraction)
         elif self.epsilon_decay_strategy == "exponential":
             # exponential decay
             ### PUT YOUR CODE HERE ###
-            self.epsilon = epsilon_exponential_decay(...)
+            self.epsilon = epsilon_exponential_decay(self.epsilon_start, self.epsilon_min, self.epsilon_exponential_decay_factor)
         else:
             raise ValueError("epsilon_decay_strategy must be either 'constant', 'linear' or 'exponential'")
 
@@ -279,27 +278,17 @@ class DQN(Agent):
         :param batch (Transition): batch vector from replay buffer
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
-        j = np.random.randint(self.batch_size)
-        # state_j = batch[0][j]
-        # action_j = batch[1][j]
-        # next_state = batch[2][j]
-        # reward_j = batch[3][j]
-        # done = batch[4][j]
-
         state_j, action_j, next_state, reward_j, done = batch
 
         action_j = action_j.to(torch.long)
 
-        # best_action = torch.argmax(self.critics_target(next_state)).item()
         best_action = self.critics_target(next_state).detach().max(1)[0].unsqueeze(-1)
 
         y = reward_j + self.gamma * (1 - done) * best_action
-        # q = self.critics_net(state_j)[int(action_j.item())]
         q = self.critics_net(state_j).gather(1, action_j)
         q_loss = torch.nn.functional.mse_loss(q, y)
 
         self.critics_optim.zero_grad()
-        # q_loss = torch.tensor(loss, requires_grad=True)
         q_loss.backward()
         self.critics_optim.step()
 
@@ -433,7 +422,6 @@ class Reinforce(Agent):
         L = L/traj_length
 
         self.policy_optim.zero_grad()
-        # loss_tensor = torch.tensor(L, requires_grad=True)
         L.backward()
         self.policy_optim.step()
 
