@@ -59,4 +59,47 @@ def random_search(num_samples: int, distribution: str, min: float=None, max: flo
     """
     # raise NotImplementedError
     values = torch.zeros(num_samples)
+
+    values = []
+
+    for _ in range(num_samples):
+        if distribution == 'uniform':
+            sample = torch.rand(1).item() * (max_val - min_val) + min_val
+        elif distribution == 'normal':
+            sample = torch.normal(mean=kwargs.get('mean', 0.0), std=kwargs.get('std', 1.0)).item()
+        elif distribution == 'exponential':
+            sample = torch.distributions.exponential.Exponential(kwargs.get('lambda', 1.0)).sample().item()
+        elif distribution == 'gamma':
+            sample = torch.distributions.gamma.Gamma(kwargs.get('alpha', 1.0), kwargs.get('beta', 1.0)).sample().item()
+        else:
+            raise ValueError(f"Unknown distribution: {distribution}")
+
+        values.append(sample)
+
     return values
+
+# base_config = {
+#     "policy_learning_rate": 1e-4,
+#     "critic_learning_rate": 1e-3,
+#     "critic_hidden_size": [32, 32, 32],
+#     "policy_hidden_size": [32, 32, 32],
+#     "gamma": 0.99,
+#     "tau": 0.5,
+#     "batch_size": 32,
+#     "buffer_capacity": int(1e6),
+# }
+
+# hparam_ranges = {
+#     "policy_learning_rate": [1e-4, 1e-3, 1e-2],
+#     "critic_learning_rate": [1e-4, 1e-3, 1e-2],
+#     "critic_hidden_size": [[32, 32, 32], [64, 64, 64], [128, 128]],
+#     "policy_hidden_size": [[32, 32, 32], [64, 64, 64], [128, 128]],
+#     "gamma": [0.95, 0.99, 0.999],
+#     "tau": [0.1, 0.5, 0.9],
+#     "batch_size": [32, 64, 128],
+#     "buffer_capacity": [int(1e5), int(1e6), int(1e7)],
+# }
+
+# configs, swept_params = generate_hparam_configs(base_config, hparam_ranges)
+# print("Generated configurations:", configs)
+# print("Swept parameters:", swept_params)
