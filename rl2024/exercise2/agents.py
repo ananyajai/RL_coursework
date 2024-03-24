@@ -160,50 +160,25 @@ class MonteCarloAgent(Agent):
         :return (Dict): A dictionary containing the updated Q-value of all the updated state-action pairs
             indexed by the state action pair.
         """
-        traj_length = len(obses)
-        self.sa_counts = defaultdict(int)
-        returns = defaultdict(list)
+        traj_length = len(rewards)
         G = 0
-        state_action_pairs = list(zip(obses, actions))
+        state_action_list = list(zip(obses, actions))
         updated_values = {}
-        # visited_state_actions = set()
-
-        for t in range(traj_length - 2, -1, -1):
-            G = self.gamma * G + rewards[t+1]
+            
+        for t in range(traj_length - 1, -1, -1):
             state_action_pair = (obses[t], actions[t])
 
-            # if state_action_pair not in visited_state_actions:
-            if not state_action_pair in state_action_pairs[:t]:
-                returns[state_action_pair].append(G)
-                self.sa_counts[state_action_pair] += 1
-                self.q_table[state_action_pair] += (G - self.q_table[state_action_pair]) / self.sa_counts[state_action_pair]
-                self.q_table[state_action_pair] = np.sum(returns[state_action_pair])/self.sa_counts[state_action_pair]
+            if state_action_pair not in state_action_list[:t]:
+                G = self.gamma*G + rewards[t]
                 
-                # R = sum(rewards[t:])
-            
-                # #update total return of the state-action pair
-                # returns[state_action_pair] = returns[state_action_pair] + R
+                self.sa_counts[state_action_pair] = self.sa_counts.get(state_action_pair, 0) + 1
+                self.q_table[state_action_pair] += (
+                    G - self.q_table[state_action_pair]
+                    ) / self.sa_counts.get(state_action_pair, 0)
                 
-                # #update the number of times the state-action pair is visited
-                # self.sa_counts[state_action_pair] += 1
-
-                # #compute the Q value by just taking the average
-                # self.q_table[state_action_pair] = returns[state_action_pair] / self.sa_counts[state_action_pair]
-
-            # visited_state_actions.add(state_action_pair)
-
-        # for t in range(traj_length - 2, -1, -1):
-            
-        #     # if not (obses[t], actions[t]) in state_action_pairs[:t]:
-        #     if state_action_pairs.index((obses[t], actions[t])) == t:
-        #         G = self.gamma*G + rewards[t+1]
-        #         # returns[(obses[t], actions[t])].append(G)
-        #         self.sa_counts[(obses[t], actions[t])] += 1
-        #         # self.q_table[(obses[t], actions[t])] = sum(returns[(obses[t], actions[t])]) * (self.sa_counts[(obses[t], actions[t])])
-        #         self.q_table[(obses[t], actions[t])] = (self.q_table[(obses[t], actions[t])] * self.sa_counts[(obses[t], actions[t])] + G)/(self.sa_counts[(obses[t], actions[t])] + 1)
-
-
-        return self.q_table
+                updated_values[state_action_pair] = self.q_table[state_action_pair]
+      
+        return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
         """Updates the hyperparameters
