@@ -17,12 +17,12 @@ from rl2024.util.hparam_sweeping import generate_hparam_configs
 from rl2024.util.result_processing import Run
 
 RENDER = False # FALSE FOR FASTER TRAINING / TRUE TO VISUALIZE ENVIRONMENT DURING EVALUATION
-SWEEP = False # TRUE TO SWEEP OVER POSSIBLE HYPERPARAMETER CONFIGURATIONS
+SWEEP = True # TRUE TO SWEEP OVER POSSIBLE HYPERPARAMETER CONFIGURATIONS
 NUM_SEEDS_SWEEP = 10 # NUMBER OF SEEDS TO USE FOR EACH HYPERPARAMETER CONFIGURATION
 SWEEP_SAVE_RESULTS = True # TRUE TO SAVE SWEEP RESULTS TO A FILE
 SWEEP_SAVE_ALL_WEIGHTS = True # TRUE TO SAVE ALL WEIGHTS FROM EACH SEED
-# ENV = "MOUNTAINCAR" # "CARTPOLE" is also possible if you uncomment the corresponding code, but is not assessed for DQN.
-ENV = "CARTPOLE"
+ENV = "MOUNTAINCAR" # "CARTPOLE" is also possible if you uncomment the corresponding code, but is not assessed for DQN.
+# ENV = "CARTPOLE"
 
 ### ASSIGNMENT: CHANGE epsilon_decay_strategy: "constant" TO "linear" OR "exponential" TO ANSWER QUESTIONS 3.2 TO 3.6 IN answer_sheet.py ###
 MOUNTAINCAR_CONFIG = {
@@ -32,8 +32,8 @@ MOUNTAINCAR_CONFIG = {
     "hidden_size": (64,64),
     "target_update_freq": 2000,
     "batch_size": 64,
-    "epsilon_decay_strategy": "constant", # "constant" or "linear" or "exponential"
-    "epsilon_start": 0.5,
+    "epsilon_decay_strategy": "exponential", # "constant" or "linear" or "exponential"
+    "epsilon_start": 1.0,
     "epsilon_min": 0.05, # only used in linear and exponential decay strategies
     "epsilon_decay": None, # For exponential epsilon decay
     "exploration_fraction": None, # For linear epsilon decay, fraction of training time at which epsilon=epsilon_min
