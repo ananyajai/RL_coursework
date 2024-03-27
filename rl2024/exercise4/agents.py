@@ -218,8 +218,8 @@ class DDPG(Agent):
 
         # Compute target Q-value
         with torch.no_grad():
-            next_action = self.actor_target.forward(next_state)
-            next_Q = self.critic_target.forward(torch.cat([next_state, next_action], dim=1))
+            next_action = self.actor_target(next_state)
+            next_Q = self.critic_target(torch.cat([next_state, next_action], dim=1))
             y = reward + self.gamma * (1 - done) * next_Q
 
         # Compute loss for critic network
@@ -229,12 +229,14 @@ class DDPG(Agent):
         # Compute loss for actor network
         p_loss = -self.critic.forward(torch.cat([state, self.actor(state)], dim=1)).mean()
 
+        total_loss = q_loss + p_loss
+
         self.critic_optim.zero_grad()
         self.policy_optim.zero_grad()
 
         # Backpropogate and optimise for both critic and actor networks
-        p_loss.backward()
-        q_loss.backward()
+        total_loss.backward()
+        # q_loss.backward()
         self.critic_optim.step()
         self.policy_optim.step()
 
@@ -246,6 +248,6 @@ class DDPG(Agent):
             target_param.data.copy_(self.tau * param.data + (1.0 - self.tau) * target_param.data)
 
         return {
-            "q_loss": q_loss,
-            "p_loss": p_loss,
+            "q_loss": q_loss.item(),
+            "p_loss": p_loss.item(),
         }

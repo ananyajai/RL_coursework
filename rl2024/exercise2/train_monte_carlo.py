@@ -4,6 +4,8 @@ from rl2024.constants import EX2_MC_CONSTANTS as CONSTANTS
 from rl2024.exercise2.agents import MonteCarloAgent
 from rl2024.exercise2.utils import evaluate
 from tqdm import tqdm
+from rl2024.util.hparam_sweeping import generate_hparam_configs
+from rl2024.util.result_processing import Run
 
 CONFIG = {
     "eval_freq": 5000, # keep this unchanged
@@ -104,7 +106,33 @@ def train(env, config):
 
     return total_reward, evaluation_return_means, evaluation_negative_returns, agent.q_table
 
+NUM_SEEDS_SWEEP = 10
 
 if __name__ == "__main__":
     env = gym.make(CONFIG["env"])
-    total_reward, _, _, q_table = train(env, CONFIG)
+    # total_reward, _, _, q_table = train(env, CONFIG)
+
+    run = Run(config=CONFIG)
+    print(f"\nStarting new run...")
+
+    for i in range(NUM_SEEDS_SWEEP):
+        print(f"\nTraining iteration: {i+1}/{NUM_SEEDS_SWEEP}")
+        eval_returns, eval_timesteps, times, run_data = train(env, CONFIG)
+        # run.update(eval_returns, eval_timesteps, times, run_data)
+
+        # Update attributes of the Run object directly
+        run._run_ids.append(len(run._run_ids))
+        
+        # Handle the case when eval_returns is a single float value
+        if isinstance(eval_returns, float):
+            run._final_returns.append(eval_returns)
+        else:
+            run._final_returns.extend(eval_returns)
+        
+        if times is not None:
+            run._train_times.append(times[-1])
+        if run_data is not None:
+            run._run_data.append(run_data)
+
+    print(f"Mean final score: {run.final_return_mean}")
+

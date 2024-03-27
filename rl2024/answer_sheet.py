@@ -163,9 +163,9 @@ def question3_7() -> str:
     return: answer (str): your answer as a string (150 words max)
     """
     answer = (
-        "Firstly, as we've employed an epsilon-greedy action selection strategy, the agent may encounter unexpected outcomes or take suboptimal actions during exploration, resulting in unusual behaviour of the loss as the agent updates its q-values.\n"
+        "Firstly, as we have employed an epsilon-greedy action selection strategy, the agent may encounter unexpected outcomes or take suboptimal actions during exploration, resulting in unusual behaviour of the loss as the agent updates its q-values.\n"
         "Secondly, in RL, the target q-values are iteratively updated as the agent is being trained, however, in the case of supervised learning the loss is calculated using the training data. This leads to a non-monotonically decreasing DQN loss in RL rather than a consistent decrease that is observed in supervised learning.\n"
-        "Moreover, DQN uses temporal difference learning to update the q-values based on the current rewards and expected future rewards. As the agent's policy is unstable in the initial phases of training, we observe fluctuations in the DQN loss due to the iterative TD process.\n"
+        "Moreover, DQN uses temporal difference learning to update the q-values based on the current rewards and expected future rewards. As the policy is unstable in the initial phases of training, we observe fluctuations in the DQN loss due to the iterative TD process.\n"
         "Finally, sampling randomly from the replay buffer introduces noise into training which leads to non-smooth changes in the loss."
     )  # TYPE YOUR ANSWER HERE (150 words max)
     return answer
