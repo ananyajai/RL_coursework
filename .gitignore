@@ -242,3 +242,4 @@ rl2024/exercise3/dqn_results/*.pkl
 rl2024/exercise4/*.pt
 
 *.pt
+*.pkl
