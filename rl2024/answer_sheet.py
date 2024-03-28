@@ -204,5 +204,3 @@ def question5_1() -> str:
     )
     return answer
 
-print(question5_1())
-
