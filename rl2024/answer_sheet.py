@@ -179,7 +179,7 @@ def question3_8() -> str:
     return: answer (str): your answer as a string (100 words max)
     """
     answer = (
-        "There's a few reasons for the observed spikes:\n"
+        "There are a few reasons for the observed spikes:\n"
         "1. The target network is updated every 2000 steps which results in sudden changes in the target values at these time steps. While employing this technique helps with stabilising training as action selection and target value estimation are separated, it leads to spikes in the DQN loss.\n"
         "2. The random transitions we sample from the replay buffer may not be consecutive which leads to the loss varying from one batch to another, hence leading to the observed spikes.\n"
         "3. The epsilon-greedy action selection leads to unexpected outcomes or rewards during exploration which may also cause spikes in the loss."

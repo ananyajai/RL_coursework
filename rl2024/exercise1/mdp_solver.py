@@ -81,33 +81,18 @@ class ValueIteration(MDPSolver):
         """
         V = np.zeros(self.state_dim)
         v_max = 0
-
-        print(self.mdp.P)
         delta = 2*theta
 
+        # Value iteration loop
         while delta > theta:
             delta = 0
             for state in range(self.state_dim):
-                
-                action_array = np.zeros(self.action_dim)
-
-                # iterate over all actions
-                for action in range(self.action_dim):
-                    transition_list = self.mdp.P[state, action]
-                    rewards_list = self.mdp.R[state, action]
-                    print(transition_list)
-                    
-                    for i in range(self.state_dim):
-                        action_array[action] += transition_list[i] * (rewards_list[i] + self.gamma * V[i])
-
-                v_max = np.max(action_array)
+                # Calculate action values using vectorised operations
+                action_values = np.sum(self.mdp.P[state] * (self.mdp.R[state] + self.gamma * V), axis=1)
+                v_max = np.max(action_values)
                 delta = max(delta, np.abs(v_max - V[state]))
-                # print(V)
-                V[state] = v_max
-                
-                # print(f"delta is {delta}")
+                V[state] = v_max   # Update value function for each state
 
-        # raise NotImplementedError("Needed for Q1")
         return V
 
     def _calc_policy(self, V: np.ndarray) -> np.ndarray:
@@ -128,20 +113,13 @@ class ValueIteration(MDPSolver):
             policy[S, OTHER_ACTIONS] = 0
         """
         policy = np.zeros([self.state_dim, self.action_dim])
-        
+
         for state in range(self.state_dim):
-            action_array = np.zeros(self.action_dim)
+            # Calculate action values using vectorised operations
+            action_values = np.sum(self.mdp.P[state] * (self.mdp.R[state] + self.gamma * V), axis=1)
+            best_action = np.argmax(action_values)   # Find the best action for current state
+            policy[state, best_action] = 1    # Set deterministic greedy policy
             
-            for action in range(self.action_dim):
-                transition_list = self.mdp.P[state, action]
-                rewards_list = self.mdp.R[state, action]
-
-                for i in range(self.state_dim):
-                    action_array[action] += transition_list[i] * (rewards_list[i] + self.gamma * V[i])
-
-            policy[state, np.argmax(action_array)] = 1
-            
-        # raise NotImplementedError("Needed for Q1")
         return policy
 
     def solve(self, theta: float = 1e-6) -> Tuple[np.ndarray, np.ndarray]:
@@ -187,25 +165,16 @@ class PolicyIteration(MDPSolver):
             It is indexed as (State) where V[State] is the value of state 'State'
         """
         V = np.zeros(self.state_dim)
-
         delta = 2*self.theta
+        
+        # Policy Evaluation loop
         while delta > self.theta:
-            delta = 0
-            for state in range(self.state_dim):
-                new_state = 0
-                # iterate over all actions
-                for action in range(self.action_dim):
-                    transition_list = self.mdp.P[state, action]
-                    rewards_list = self.mdp.R[state, action]
+            new_value = np.sum(policy * (np.sum(self.mdp.P * (self.mdp.R + self.gamma * V), axis=2)), axis=1)
+            # Calculate new value function using vectorised operations
+            delta = np.max(np.abs(new_value - V))  
+            V = new_value  
 
-                    for i in range(self.state_dim):
-                        new_state += policy[state, action] * transition_list[i] * (rewards_list[i] + self.gamma * V[i])
-
-                delta = max(delta, np.abs(new_state - V[state]))
-                V[state] = new_state
-                
-        # raise NotImplementedError("Needed for Q1")
-        return np.array(V)
+        return V
 
     def _policy_improvement(self) -> Tuple[np.ndarray, np.ndarray]:
         """Computes policy iteration until a stable policy is reached
@@ -228,32 +197,22 @@ class PolicyIteration(MDPSolver):
         """
         policy = np.zeros([self.state_dim, self.action_dim])
         V = np.zeros([self.state_dim])
-        iter = 1
-        policy_stable = True
+        policy_stable = False
 
-        while policy_stable:
-            policy_stable = False
-            
-            V = PolicyIteration._policy_eval(self, policy)
+        while not policy_stable:
+            policy_stable = True
+            V = self._policy_eval(policy)  # Perform policy evaluation
 
-            for state in range(self.state_dim):
-                old_action = np.argmax(policy[state])
-                action_array = np.zeros((self.action_dim))
+            # Calculate action values for all states using vectorized operations
+            action_values = np.sum(self.mdp.P * (self.mdp.R + self.gamma * V), axis=2)
+            best_action = np.argmax(action_values, axis=1)  # Determine the best action for current state
+            new_policy = np.eye(self.action_dim)[best_action]  # New policy based on best actions
 
-                for action in range(self.action_dim):
-                    transition_list = self.mdp.P[state, action]
-                    rewards_list = self.mdp.R[state, action]
+            if not np.array_equal(policy, new_policy):
+                policy_stable = False 
 
-                    for i in range(self.action_dim):
-                        action_array[action] += transition_list[i] * (rewards_list[i] + self.gamma * V[i])
+            policy = new_policy
 
-                policy[state] = np.zeros((self.action_dim))
-                policy[state, np.argmax(action_array)] = 1
-            
-                if old_action != np.argmax(policy[state]):
-                    policy_stable = True
-            
-        # raise NotImplementedError("Needed for Q1")
         return policy, V
 
     def solve(self, theta: float = 1e-6) -> Tuple[np.ndarray, np.ndarray]:
