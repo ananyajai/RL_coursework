@@ -95,11 +95,11 @@ class DDPG(Agent):
         self.policy_optim = Adam(self.actor.parameters(), lr=policy_learning_rate, eps=1e-3)
         self.critic_optim = Adam(self.critic.parameters(), lr=critic_learning_rate, eps=1e-3)
 
-        # # Learning rate scheduler for policy optimizer
-        # self.policy_lr_scheduler = ExponentialLR(self.policy_optim, gamma=0.95)
+        # Learning rate scheduler for policy optimizer
+        self.policy_lr_scheduler = ExponentialLR(self.policy_optim, gamma=0.95)
 
-        # # Learning rate scheduler for critic optimizer
-        # self.critic_lr_scheduler = ExponentialLR(self.critic_optim, gamma=0.95)
+        # Learning rate scheduler for critic optimizer
+        self.critic_lr_scheduler = ExponentialLR(self.critic_optim, gamma=0.95)
 
 
         # ############################################# #
@@ -199,9 +199,8 @@ class DDPG(Agent):
 
         with torch.no_grad():
             if explore:
+                # Explore
                 sampled_action = self.actor(state) + self.noise_variable.sample()
-                # noise = self.noise_variable.sample((2,))  # Generate noise for both throttle and turn
-                # sampled_action += noise
             else:
                 # Exploit - choose the action with the highest probability
                 sampled_action = self.actor(state)

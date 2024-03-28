@@ -40,15 +40,26 @@ RACETRACK_CONFIG.update(RACETRACK_CONSTANTS)
 
 ### INCLUDE YOUR CHOICE OF HYPERPARAMETERS HERE ###
 RACETRACK_HPARAMS = {
-    "policy_learning_rate": [1e-4],
-    "critic_learning_rate": [1e-3],
+    "policy_learning_rate": [5e-4],
+    "critic_learning_rate": [1e-4],
     "critic_hidden_size": [[64, 64, 64]],
     "policy_hidden_size": [[64, 64, 64]],
-    "gamma": [0.995, 0.99],
-    "tau": [5e-3],
+    "gamma": [0.96],
+    "tau": [6e-3],
     "batch_size": [64],
     "buffer_capacity": [int(1e6)],
 }
+
+# RACETRACK_HPARAMS = {
+#     "policy_learning_rate": [5e-4],
+#     "critic_learning_rate": [1e-3],
+#     "critic_hidden_size": [[64, 64, 64]],
+#     "policy_hidden_size": [[64, 64, 64]],
+#     "gamma": [0.96],
+#     "tau": [6e-3],
+#     "batch_size": [64],
+#     "buffer_capacity": [int(1e6)],
+# }
 
 SWEEP_RESULTS_FILE_BIPEDAL = "DDPG-Racetrack-sweep-results-ex5.pkl"
 
