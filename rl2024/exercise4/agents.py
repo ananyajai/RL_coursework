@@ -175,10 +175,10 @@ class DDPG(Agent):
         :param timestep (int): current timestep at the beginning of the episode
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
-        # Update learning rate for policy optimizer
+        # Update learning rate for policy optimiser
         self.policy_lr_scheduler.step()
 
-        # Update learning rate for critic optimizer
+        # Update learning rate for critic optimiser
         self.critic_lr_scheduler.step()
 
 
