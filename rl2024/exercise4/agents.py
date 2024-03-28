@@ -7,6 +7,9 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.distributions import Normal
+from torch.optim.lr_scheduler import ExponentialLR
+import torch.nn.utils as nn_utils
+
 
 from rl2024.exercise3.agents import Agent
 from rl2024.exercise3.networks import FCNetwork
@@ -92,6 +95,12 @@ class DDPG(Agent):
         self.policy_optim = Adam(self.actor.parameters(), lr=policy_learning_rate, eps=1e-3)
         self.critic_optim = Adam(self.critic.parameters(), lr=critic_learning_rate, eps=1e-3)
 
+        # # Learning rate scheduler for policy optimizer
+        # self.policy_lr_scheduler = ExponentialLR(self.policy_optim, gamma=0.95)
+
+        # # Learning rate scheduler for critic optimizer
+        # self.critic_lr_scheduler = ExponentialLR(self.critic_optim, gamma=0.95)
+
 
         # ############################################# #
         # WRITE ANY HYPERPARAMETERS YOU MIGHT NEED HERE #
@@ -166,8 +175,12 @@ class DDPG(Agent):
         :param timestep (int): current timestep at the beginning of the episode
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
-        ### PUT YOUR CODE HERE ###
-        pass
+        # # Update learning rate for policy optimizer
+        # self.policy_lr_scheduler.step()
+
+        # # Update learning rate for critic optimizer
+        # self.critic_lr_scheduler.step()
+
 
     def act(self, obs: np.ndarray, explore: bool):
         """Returns an action (should be called at every timestep)
@@ -210,11 +223,11 @@ class DDPG(Agent):
         :param batch (Transition): batch vector from replay buffer
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
-        q_loss = 0.0
-        p_loss = 0.0
 
         state, action, next_state, reward, done = batch
         action = action.to(torch.long)
+
+        self.critic_optim.zero_grad()
 
         # Compute target Q-value
         with torch.no_grad():
@@ -226,18 +239,19 @@ class DDPG(Agent):
         q = self.critic.forward(torch.cat([state, action], dim=1))
         q_loss = F.mse_loss(q, y)
 
+        # Backpropogate and optimise for the critic network
+        q_loss.backward()
+        nn_utils.clip_grad_norm_(self.critic.parameters(), max_norm=1.0)  # Apply gradient clipping
+        self.critic_optim.step()
+
+        self.policy_optim.zero_grad()
+
         # Compute loss for actor network
         p_loss = -self.critic.forward(torch.cat([state, self.actor(state)], dim=1)).mean()
 
-        total_loss = q_loss + p_loss
-
-        self.critic_optim.zero_grad()
-        self.policy_optim.zero_grad()
-
-        # Backpropogate and optimise for both critic and actor networks
-        total_loss.backward()
-        # q_loss.backward()
-        self.critic_optim.step()
+        # Backpropogate and optimise for the actor network
+        p_loss.backward()
+        nn_utils.clip_grad_norm_(self.actor.parameters(), max_norm=1.0)  # Apply gradient clipping
         self.policy_optim.step()
 
         # Soft update for actor and critic using step size tau
