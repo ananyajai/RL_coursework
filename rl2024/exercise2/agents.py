@@ -55,8 +55,10 @@ class Agent(ABC):
         :return (int): index of selected action
         """
         if random.uniform(0, 1) > self.epsilon:
+            # Exploit - choose the action with the highest probability
             return max(list(range(self.action_space.n)), key = lambda x: self.q_table[(obs, x)])
         else:
+            # Explore - sample a random action
             return self.action_space.sample()
 
     @abstractmethod
@@ -105,12 +107,13 @@ class QLearningAgent(Agent):
         :param done (bool): flag indicating whether a terminal state has been reached
         :return (float): updated Q-value for current observation-action pair
         """
-        if not done:
-            a_ = np.argmax([self.q_table[(n_obs, a)] for a in range(self.n_acts)])
-            self.q_table[(obs, action)] += self.alpha*(reward + self.gamma*self.q_table[(n_obs, a_)] - self.q_table[(obs, action)])
-        
-        else:
-            self.q_table[(obs, action)] += self.alpha*(reward - self.q_table[(obs, action)])
+        # Best action for the next state
+        a_ = np.argmax([self.q_table[(n_obs, a)] for a in range(self.n_acts)])
+
+        # Update Q-value using Q-learning update rule
+        self.q_table[(obs, action)] += (
+            self.alpha * (reward + self.gamma * self.q_table[(n_obs, a_)] * (1 - done) - self.q_table[(obs, action)])
+            )
 
         obs = n_obs
 
@@ -164,13 +167,16 @@ class MonteCarloAgent(Agent):
         G = 0
         state_action_list = list(zip(obses, actions))
         updated_values = {}
-            
+        
+        # Iterate over the trajectory backwards
         for t in range(traj_length - 1, -1, -1):
             state_action_pair = (obses[t], actions[t])
 
+            # Check if this is the first visit to the state-action pair
             if state_action_pair not in state_action_list[:t]:
                 G = self.gamma*G + rewards[t]
                 
+                # Monte-Carlo update rule
                 self.sa_counts[state_action_pair] = self.sa_counts.get(state_action_pair, 0) + 1
                 self.q_table[state_action_pair] += (
                     G - self.q_table[state_action_pair]
