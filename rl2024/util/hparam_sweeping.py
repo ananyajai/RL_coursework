@@ -89,16 +89,16 @@ def random_search(num_samples: int, distribution: str, min: float=None, max: flo
 #     "buffer_capacity": int(1e6),
 # }
 
-# hparam_ranges = {
-#     "policy_learning_rate": [1e-4, 1e-3, 1e-2],
-#     "critic_learning_rate": [1e-4, 1e-3, 1e-2],
-#     "critic_hidden_size": [[32, 32, 32], [64, 64, 64], [128, 128]],
-#     "policy_hidden_size": [[32, 32, 32], [64, 64, 64], [128, 128]],
-#     "gamma": [0.95, 0.99, 0.999],
-#     "tau": [0.1, 0.5, 0.9],
-#     "batch_size": [32, 64, 128],
-#     "buffer_capacity": [int(1e5), int(1e6), int(1e7)],
-# }
+hparam_ranges = {
+    "policy_learning_rate": [1e-4, 1e-3],
+    "critic_learning_rate": [1e-4, 1e-3],
+    "critic_hidden_size": [[64, 64, 64]],
+    "policy_hidden_size": [[64, 64, 64]],
+    "gamma": [0.95, 0.995],
+    "tau": [5e-3, 6e-3],
+    "batch_size": [64],
+    "buffer_capacity": [int(1e6)],
+}
 
 # configs, swept_params = generate_hparam_configs(base_config, hparam_ranges)
 # print("Generated configurations:", configs)
