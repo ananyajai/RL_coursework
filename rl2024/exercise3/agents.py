@@ -282,20 +282,22 @@ class DQN(Agent):
 
         action_j = action_j.to(torch.long)
 
+        # Compute the next Q-values using the target network
         next_q = self.critics_target(next_state)
+        # Find the best action for the next states
         best_action = next_q.gather(1, next_q.max(1)[1].unsqueeze(-1))
 
-        # best_action = self.critics_target(next_state).detach().max(1)[0].unsqueeze(-1)
-
+        # Calculate current and taget Q-values
         y = reward_j + self.gamma * (1 - done) * best_action
         q = self.critics_net(state_j).gather(1, action_j)
-        q_loss = torch.nn.functional.mse_loss(q, y)
+        q_loss = torch.nn.functional.mse_loss(q, y)   # Minimise mean squared error
 
+        # Backpropogate and perform optimisation step
         self.critics_optim.zero_grad()
         q_loss.backward()
         self.critics_optim.step()
 
-        # Hard update
+        # Hard update for parameter theta
         self.update_counter += 1
         if self.update_counter % self.target_update_freq == 0:
             self.critics_target.load_state_dict(self.critics_net.state_dict())
@@ -411,22 +413,26 @@ class Reinforce(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
             losses
         """
-        L = 0
+        # Initialise loss and returns
+        p_loss = 0
         G = 0
-        
         traj_length = len(observations)
+
+        # Compute action probabilities using the current policy
         action_probabilities = self.policy(torch.tensor(observations, dtype=torch.float32))
 
+        # Loop backwards in the episode
         for t in range(traj_length - 2, -1, -1):
             G = self.gamma * G + rewards[t+1]
-            action_prob = action_probabilities[t, actions[t]]
-            L = L - G * torch.log(action_prob)
+            action_prob = action_probabilities[t, actions[t]]   # Probability of the action at time step t
+            p_loss = p_loss - G * torch.log(action_prob)   # Minimise loss function
 
-        L = L/traj_length
+        p_loss = p_loss/traj_length   # Normalise policy loss
 
+        # Backpropogate and perform optimisation step
         self.policy_optim.zero_grad()
-        L.backward()
+        p_loss.backward()
         self.policy_optim.step()
 
-        return {"p_loss": float(L)}
+        return {"p_loss": float(p_loss)}
 
