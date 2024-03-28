@@ -25,7 +25,7 @@ def generate_hparam_configs(base_config:Dict, hparam_ranges:Dict) -> Tuple[List[
     return new_configs, swept_params
 
 
-def grid_search(num_samples: int, min: float = None, max: float = None, **kwargs)->Iterable:
+def grid_search(num_samples: int, min_val: float = None, max_val: float = None, **kwargs)->Iterable:
     """ Implement this method to set hparam range over a grid of hyperparameters.
     :param num_samples (int): number of samples making up the grid
     :param min (float): minimum value for the allowed range to sweep over
@@ -38,8 +38,10 @@ def grid_search(num_samples: int, min: float = None, max: float = None, **kwargs
     **YOU MAY IMPLEMENT THIS FUNCTION FOR Q5**
 
     """
-    # raise NotImplementedError
-    values = torch.zeros(num_samples)
+    if min_val is None or max_val is None:
+        raise ValueError("Both min_val and max_val must be provided.")
+
+    values = torch.linspace(min_val, max_val, num_samples)
     return values
 
 
@@ -59,47 +61,7 @@ def random_search(num_samples: int, distribution: str, min: float=None, max: flo
     """
     # raise NotImplementedError
     values = torch.zeros(num_samples)
-
     values = []
-
-    for _ in range(num_samples):
-        if distribution == 'uniform':
-            sample = torch.rand(1).item() * (max_val - min_val) + min_val
-        elif distribution == 'normal':
-            sample = torch.normal(mean=kwargs.get('mean', 0.0), std=kwargs.get('std', 1.0)).item()
-        elif distribution == 'exponential':
-            sample = torch.distributions.exponential.Exponential(kwargs.get('lambda', 1.0)).sample().item()
-        elif distribution == 'gamma':
-            sample = torch.distributions.gamma.Gamma(kwargs.get('alpha', 1.0), kwargs.get('beta', 1.0)).sample().item()
-        else:
-            raise ValueError(f"Unknown distribution: {distribution}")
-
-        values.append(sample)
 
     return values
 
-# base_config = {
-#     "policy_learning_rate": 1e-4,
-#     "critic_learning_rate": 1e-3,
-#     "critic_hidden_size": [32, 32, 32],
-#     "policy_hidden_size": [32, 32, 32],
-#     "gamma": 0.99,
-#     "tau": 0.5,
-#     "batch_size": 32,
-#     "buffer_capacity": int(1e6),
-# }
-
-hparam_ranges = {
-    "policy_learning_rate": [1e-4, 1e-3],
-    "critic_learning_rate": [1e-4, 1e-3],
-    "critic_hidden_size": [[64, 64, 64]],
-    "policy_hidden_size": [[64, 64, 64]],
-    "gamma": [0.95, 0.995],
-    "tau": [5e-3, 6e-3],
-    "batch_size": [64],
-    "buffer_capacity": [int(1e6)],
-}
-
-# configs, swept_params = generate_hparam_configs(base_config, hparam_ranges)
-# print("Generated configurations:", configs)
-# print("Swept parameters:", swept_params)
