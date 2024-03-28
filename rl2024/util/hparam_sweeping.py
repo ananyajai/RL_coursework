@@ -65,3 +65,14 @@ def random_search(num_samples: int, distribution: str, min: float=None, max: flo
 
     return values
 
+
+hparam_ranges = {
+    "policy_learning_rate": [1e-3, 1e-4, 5e-4],
+    "critic_learning_rate": [1e-3, 1e-4],
+    "critic_hidden_size": [[64, 64, 64], [128, 128, 128]],
+    "policy_hidden_size": [[64, 64, 64], [128, 128, 128]],
+    "gamma": [0.96, 0.99, 0.995],
+    "tau": [4e-3, 5e-3, 6e-3, 7e-3],
+    "batch_size": [32, 64],
+    "buffer_capacity": [int(1e6)],
+}

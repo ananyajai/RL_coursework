@@ -175,11 +175,11 @@ class DDPG(Agent):
         :param timestep (int): current timestep at the beginning of the episode
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
-        # # Update learning rate for policy optimizer
-        # self.policy_lr_scheduler.step()
+        # Update learning rate for policy optimizer
+        self.policy_lr_scheduler.step()
 
-        # # Update learning rate for critic optimizer
-        # self.critic_lr_scheduler.step()
+        # Update learning rate for critic optimizer
+        self.critic_lr_scheduler.step()
 
 
     def act(self, obs: np.ndarray, explore: bool):
@@ -199,7 +199,7 @@ class DDPG(Agent):
 
         with torch.no_grad():
             if explore:
-                # Explore
+                # Explore - sample a random action
                 sampled_action = self.actor(state) + self.noise_variable.sample()
             else:
                 # Exploit - choose the action with the highest probability

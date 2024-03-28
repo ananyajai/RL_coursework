@@ -231,15 +231,3 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-reinforce_results/*
-
-rl2024/exercise3/*.pt
-rl2024/exercise3/*.pkl
-rl2024/exercise3/dqn_results/*.pt
-rl2024/exercise3/dqn_results/*.pkl
-
-rl2024/exercise4/*.pt
-
-*.pt
-*.pkl
