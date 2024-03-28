@@ -74,7 +74,7 @@ def question3_1() -> str:
     c) 2e-4
     return: (str): your answer as a string. accepted strings: "a", "b" or "c"
     """
-    answer = "b"  # TYPE YOUR ANSWER HERE "a", "b" or "c"
+    answer = "c"  # TYPE YOUR ANSWER HERE "a", "b" or "c"
     return answer
 
 
@@ -197,6 +197,12 @@ def question5_1() -> str:
     the best performance of your agents
     return: answer (str): your answer as a string (200 words max)
     """
-    answer = "hi"  # TYPE YOUR ANSWER HERE (200 words max)
+    answer = (
+        "I started off by researching literature on the hyperparameter tuning for the DDPG algorithm in order to select a suitable range of discrete values to test for each hyperparameter. This was done as checking a large range of values for the hyperparameters was not computationally feasible (specially given the run time of the code). Reading papers on this topic helped me understand how to select ranges of values that balances instability and convergence without being stuck in a local minima.\n"
+        "The size of the hidden layers was fixed from the hyperparameter tuning for question 4. Once I had about 2 - 4 values to test for the rest of the hyperparameters, I performed a grid search. I chose to use grid search as it helps with fine-tuning the optimal configuration of hyperparameters by performing a comprehensive search over the given range of values.\n"
+        "While I got satisfactory returns from the weights chosen by the grid search, I decided to further optimise performance using hyperparameter scheduling for the learning rate. Using a high decay rate of 0.95 helped with the gradual decrease in learning rate which stabilises the training process and helps us achieve quicker convergence to the optimal solution.\n"
+    )
     return answer
+
+print(question5_1())
 
